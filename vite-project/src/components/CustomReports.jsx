@@ -14,7 +14,7 @@ export default function CustomReports() {
 
   const handleCreateReport = (e) => {
     e.preventDefault();
-    if (!hasPermission('Editor')) return; // Redundant enforcement guard
+    if (!hasPermission('Editor')) return;
 
     const newReport = {
       id: `R-0${Math.floor(100 + Math.random() * 900)}`,
@@ -28,15 +28,15 @@ export default function CustomReports() {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
       {/* Report Form Builder Panel */}
-      <div className="xl:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-xl h-fit">
+      <div className="xl:col-span-1 bg-slate-900 border border-slate-800 p-5 md:p-6 rounded-xl h-fit">
         <h3 className="text-base font-semibold text-slate-200 mb-4">Report Design Studio</h3>
         
         {!hasPermission('Editor') ? (
           <div className="bg-slate-950/60 border border-dashed border-slate-800 p-6 rounded-lg text-center space-y-3">
             <Lock className="mx-auto text-slate-600" size={32} />
-            <p className="text-xs text-slate-400">Your profile's permissions are limited to read-only views. Creation access is denied.</p>
+            <p className="text-xs text-slate-400">Your profile's permissions are limited to read-only views.</p>
           </div>
         ) : (
           <form onSubmit={handleCreateReport} className="space-y-4">
@@ -55,16 +55,16 @@ export default function CustomReports() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Target Metrics (Comma separated)</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1">Target Metrics</label>
               <input 
                 type="text" required value={form.metrics}
                 onChange={(e) => setForm({...form, metrics: e.target.value})}
-                placeholder="e.g., drops, failures, latency"
+                placeholder="Latency, Failure Rates"
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Infrastructure Segment Scope</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1">Scope</label>
               <select 
                 value={form.scope}
                 onChange={(e) => setForm({...form, scope: e.target.value})}
@@ -75,26 +75,51 @@ export default function CustomReports() {
                 <option value="Staging Environment">Staging Environment</option>
               </select>
             </div>
-            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
               <Plus size={16} /> Compile Report
             </button>
           </form>
         )}
       </div>
 
-      {/* Generated Report Repositories table */}
+      {/* Reports Panel */}
       <div className="xl:col-span-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-slate-800">
+        <div className="p-5 md:p-6 border-b border-slate-800">
           <h3 className="text-base font-semibold text-slate-200">Active Architecture Reports</h3>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* MOBILE VIEW CARD CONTAINER (Hidden on desktop) */}
+        <div className="block md:hidden p-4 space-y-4">
+          {reports.map((report) => (
+            <div key={report.id} className="bg-slate-950 border border-slate-800 p-4 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-indigo-400">{report.id}</span>
+                <span className="bg-slate-900 px-2.5 py-0.5 rounded-full text-[11px] text-slate-400 border border-slate-800">
+                  {report.scope}
+                </span>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-slate-200">{report.title}</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Metrics: {report.metrics}</p>
+              </div>
+              <div className="pt-2 border-t border-slate-800 flex justify-end">
+                <button className="text-indigo-400 flex items-center gap-1.5 text-xs font-medium bg-indigo-600/10 px-3 py-1.5 rounded-md border border-indigo-500/20">
+                  <FileDown size={14} /> Download JSON
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* DESKTOP VIEW TABLE (Hidden on mobile screens) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
             <thead className="bg-slate-950 text-slate-400 text-xs uppercase tracking-wider">
               <tr>
                 <th className="px-6 py-3">ID Reference</th>
                 <th className="px-6 py-3">Report Details</th>
                 <th className="px-6 py-3">Tracked Items</th>
-                <th className="px-6 py-3">Infrastructure Focus</th>
+                <th className="px-6 py-3">Focus</th>
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -104,9 +129,13 @@ export default function CustomReports() {
                   <td className="px-6 py-4 font-mono font-medium text-indigo-400">{report.id}</td>
                   <td className="px-6 py-4 font-semibold text-slate-200">{report.title}</td>
                   <td className="px-6 py-4 text-xs text-slate-400">{report.metrics}</td>
-                  <td className="px-6 py-4"><span className="bg-slate-950 px-2.5 py-1 rounded-full text-xs text-slate-400 border border-slate-800">{report.scope}</span></td>
+                  <td className="px-6 py-4">
+                    <span className="bg-slate-950 px-2.5 py-1 rounded-full text-xs text-slate-400 border border-slate-800">
+                      {report.scope}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-indigo-400 transition-colors p-1" title="Download Schema JSON">
+                    <button className="text-slate-400 hover:text-indigo-400 transition-colors p-1">
                       <FileDown size={16} />
                     </button>
                   </td>
